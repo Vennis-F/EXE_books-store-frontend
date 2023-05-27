@@ -50,9 +50,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "prepare": "husky install"
+    "build": "craco build"
   },
   "browserslist": {
     "production": [
