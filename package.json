@@ -85,6 +85,7 @@
     "react-error-overlay": "6.0.9"
   },
   "engines": {
-    "yarn": "0.1.0"
+    "node": "16.16.0",
+    "yarn": "1.22.19"
   }
 }
