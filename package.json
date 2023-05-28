@@ -74,7 +74,9 @@
     ]
   },
   "lint-staged": {
-    "*.js,jsx,css": "prettier --write"
+    "*.js,jsx": "eslint --cache --fix",
+    "*.js,jsx,css": "prettier --write",
+    "*.js": "eslint --cache --fix"
   },
   "resolutions": {
     "react-error-overlay": "6.0.9"
