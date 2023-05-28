@@ -523,7 +523,17 @@ const CartContact = () => {
                             <span style={{ fontWeight: 'bold' }}>
                               Nội dung chuyển tiền:
                             </span>
-                            {` ${receiver.fullName} - Chuyển tiền order ${randomOrderIdMomo}  - ${receiver.phone}`}
+                            {` ${receiver.fullName} - Chuyển tiền order ${randomOrderIdMomo} - ${receiver.phone}`}
+                          </p>
+                        </Row>
+                        <Row
+                          className="cart-form"
+                          style={{ width: '100%' }}
+                          align="middle"
+                        >
+                          <p>
+                            <span style={{ fontWeight: 'bold' }}>Số tiền:</span>
+                            {` ${cart.totalCost}`}
                           </p>
                         </Row>
                       </div>
