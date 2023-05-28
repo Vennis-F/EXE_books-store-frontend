@@ -8,8 +8,10 @@ import {
   Form,
   Input,
   message,
+  Radio,
+  Space,
 } from 'antd';
-
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import {
   InfoCircleOutlined,
   QuestionOutlined,
@@ -67,6 +69,7 @@ const CartContact = () => {
   const [receiver, setReceiver] = useState({});
   const [inforDefault, setInforDefault] = useState({});
   const [cart, setCart] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState('cash');
 
   // Hook
   const navigate = useNavigate();
@@ -91,14 +94,11 @@ const CartContact = () => {
     }
   };
   const onReset = () => form.setFieldsValue(inforDefault);
-
   const onClickConfirm = async () => {
     try {
       if (localStorage.getItem('__role') === 'R02') {
         // Create order
         const order = await createOrderGuest();
-        console.log(order);
-
         message.loading('Đang kiểm tra...', 1.5);
 
         // Empty alot
@@ -144,6 +144,9 @@ const CartContact = () => {
       setCart(cart);
     }
   };
+  const changePaymentMethod = (e) => {
+    setPaymentMethod(e.target.value);
+  };
 
   // useEffect
   useEffect(() => {
@@ -182,7 +185,7 @@ const CartContact = () => {
           // Set state for receiver information
           setInforDefault(result);
           form.setFieldsValue(result);
-          // setReceiver(result);
+          setReceiver(result);
 
           // Set state for cart item
           getCartItemList()
@@ -196,7 +199,43 @@ const CartContact = () => {
         .catch((error) => console.log(error));
     }
   }, []);
+  console.log('[cart]', cart);
+  console.log('[receiver]', receiver);
 
+  const inforPaymentPaypal = () => {
+    let totalCost = 0;
+    const itemsPayment = cart.items.map((cartItem) => {
+      const value =
+        Math.round((cartItem.product.salePrice / 23000) * 100) / 100;
+      totalCost += value * cartItem.quantity;
+      return {
+        name: cartItem.product.title,
+        unit_amount: {
+          currency_code: 'USD',
+          value,
+        },
+        quantity: cartItem.quantity,
+      };
+    });
+    totalCost = Math.round(totalCost * 100) / 100;
+    return {
+      purchase_units: [
+        {
+          amount: {
+            value: totalCost,
+            breakdown: {
+              item_total: {
+                value: totalCost,
+                currency_code: 'USD',
+              },
+            },
+          },
+          items: itemsPayment,
+          description: `${receiver.fullName} - Payment for books - ${receiver.phone}`,
+        },
+      ],
+    };
+  };
   return (
     <>
       <WrapperConentContainer>
@@ -414,18 +453,32 @@ const CartContact = () => {
               </h2>
             </Row>
             <Divider style={{ margin: '18px 0' }} />
-              <div className="cart-value">
-                <Row
-                  className="cart-form"
-                  style={{ width: '100%' }}
-                  align="middle"
-                >
-                  <DollarOutlined
-                    style={{ fontSize: '22px', marginRight: '10px' }}
-                  />
-                  Thanh toán bằng tiền mặt khi nhận hàng
-                </Row>
-              </div>
+            <Radio.Group
+              direction="vertial"
+              onChange={changePaymentMethod}
+              value={paymentMethod}
+            >
+              <Space direction="vertical">
+                <Radio value={'cash'}>
+                  <div className="cart-value">
+                    <Row className="cart-form" style={{ width: '100%' }}>
+                      Thanh toán bằng tiền mặt khi nhận hàng
+                    </Row>
+                  </div>
+                </Radio>
+                <Radio value={'paypal'}>
+                  <div className="cart-value">
+                    <Row
+                      className="cart-form"
+                      style={{ width: '100%' }}
+                      align="middle"
+                    >
+                      Thanh toán bằng Paypal
+                    </Row>
+                  </div>
+                </Radio>
+              </Space>
+            </Radio.Group>
           </Col>
         </Row>
       </WrapperConentContainer>
@@ -473,11 +526,40 @@ const CartContact = () => {
             </Button>
           </Col>
           <Col span={8} offset={8}>
-            <div className="cart-money">
-              <button onClick={onClickConfirm} style={{ color: 'white' }}>
-                Xác nhận thanh toán
-              </button>
-            </div>
+            {paymentMethod === 'cash' ? (
+              <div className="cart-money">
+                <button onClick={onClickConfirm} style={{ color: 'white' }}>
+                  Xác nhận thanh toán
+                </button>
+              </div>
+            ) : (
+              <div className="cart-value">
+                <Row
+                  className="cart-form"
+                  style={{ width: '100%' }}
+                  align="middle"
+                >
+                  <PayPalScriptProvider
+                    options={{
+                      'client-id': process.env.PAYPAL_CLIENT_ID,
+                    }}
+                  >
+                    <PayPalButtons
+                      createOrder={(data, actions) => {
+                        return actions.order.create(inforPaymentPaypal());
+                      }}
+                      onApprove={(data, actions) => {
+                        return actions.order.capture().then((details) => {
+                          console.log('[Payment Capture] ', details);
+                          message.success('Thanh toán thành công', 1);
+                          onClickConfirm();
+                        });
+                      }}
+                    />
+                  </PayPalScriptProvider>
+                </Row>
+              </div>
+            )}
           </Col>
         </Row>
       </WrapperConentContainer>
