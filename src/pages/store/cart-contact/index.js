@@ -35,6 +35,8 @@ import {
 } from './service';
 import axiosClient from 'util/axiosClient';
 import { MoneyFormat } from 'components/format';
+import { QRCodeSVG } from 'qrcode.react';
+import QRimg from '../../../assets/QR_Loc.svg';
 const { Option } = Select;
 
 const layout = {
@@ -51,7 +53,6 @@ const tailLayout = {
     span: 18,
   },
 };
-
 const validateMessages = {
   required: 'Nhập ${label}!',
   types: {
@@ -62,6 +63,11 @@ const validateMessages = {
     range: '${label} must be between ${min} and ${max}',
   },
 };
+const getRandomInt = (min, max) => {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+};
 
 const CartContact = () => {
   // State
@@ -70,6 +76,9 @@ const CartContact = () => {
   const [inforDefault, setInforDefault] = useState({});
   const [cart, setCart] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [randomOrderIdMomo, setRandRomOrderIdMomo] = useState(
+    getRandomInt(10000, 99999)
+  );
 
   // Hook
   const navigate = useNavigate();
@@ -111,9 +120,9 @@ const CartContact = () => {
         }, 2500);
       } else {
         // Create order
-        const order = await createOrder();
-        console.log(order);
-
+        const order = await createOrder({
+          noteMoMo: `${receiver.fullName} - Chuyển tiền order ${randomOrderIdMomo}  - ${receiver.phone}`,
+        });
         message.loading('Đang kiểm tra...', 1.5);
 
         // Empty a lot
@@ -145,6 +154,10 @@ const CartContact = () => {
     }
   };
   const changePaymentMethod = (e) => {
+    if (e.target.value === 'momo' && !receiver) {
+      message.error('Xin hãy nhập Thông tin nhận hàng trước');
+      return;
+    }
     setPaymentMethod(e.target.value);
   };
 
@@ -199,8 +212,6 @@ const CartContact = () => {
         .catch((error) => console.log(error));
     }
   }, []);
-  console.log('[cart]', cart);
-  console.log('[receiver]', receiver);
 
   const inforPaymentPaypal = () => {
     let totalCost = 0;
@@ -236,6 +247,7 @@ const CartContact = () => {
       ],
     };
   };
+
   return (
     <>
       <WrapperConentContainer>
@@ -477,6 +489,47 @@ const CartContact = () => {
                     </Row>
                   </div>
                 </Radio>
+                {localStorage.getItem('__role') === 'R01' && (
+                  <Radio value={'momo'}>
+                    <div className="cart-value">
+                      <Row
+                        className="cart-form"
+                        style={{ width: '100%' }}
+                        align="middle"
+                      >
+                        Thanh toán bằng Momo
+                      </Row>
+                    </div>
+                    {paymentMethod === 'momo' && (
+                      <div className="cart-value">
+                        <Row
+                          className="cart-form"
+                          style={{ width: '100%' }}
+                          align="middle"
+                        >
+                          <img
+                            src={QRimg}
+                            alt="logo"
+                            style={{ height: 200 }}
+                            className="logo"
+                          />
+                        </Row>
+                        <Row
+                          className="cart-form"
+                          style={{ width: '100%' }}
+                          align="middle"
+                        >
+                          <p>
+                            <span style={{ fontWeight: 'bold' }}>
+                              Nội dung chuyển tiền:
+                            </span>
+                            {` ${receiver.fullName} - Chuyển tiền order ${randomOrderIdMomo}  - ${receiver.phone}`}
+                          </p>
+                        </Row>
+                      </div>
+                    )}
+                  </Radio>
+                )}
               </Space>
             </Radio.Group>
           </Col>
@@ -526,7 +579,7 @@ const CartContact = () => {
             </Button>
           </Col>
           <Col span={8} offset={8}>
-            {paymentMethod === 'cash' ? (
+            {paymentMethod !== 'paypal' ? (
               <div className="cart-money">
                 <button onClick={onClickConfirm} style={{ color: 'white' }}>
                   Xác nhận thanh toán

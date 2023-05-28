@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react';
 import {
   Col,
@@ -198,6 +197,12 @@ const ProductEdit = ({
                     Địa chỉ
                   </Col>
                   <Col span={18}>{currentRow?.address}</Col>
+                </Row>
+                <Row style={{ marginBottom: '8px' }}>
+                  <Col className="order-title-receiver" span={6}>
+                    Note
+                  </Col>
+                  <Col span={18}>{currentRow?.note || 'Empty'}</Col>
                 </Row>
               </Col>
             </Row>
