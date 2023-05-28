@@ -541,7 +541,8 @@ const CartContact = () => {
                 >
                   <PayPalScriptProvider
                     options={{
-                      'client-id': process.env.PAYPAL_CLIENT_ID,
+                      'client-id':
+                        'ASQys9b85ah0CzIqR_bO90qBvlg8N48-uzvUYt6IViPTawAcfOlBcJ3bMNyZjp6Zs2tSpvaTTbjQTp-Y',
                     }}
                   >
                     <PayPalButtons
