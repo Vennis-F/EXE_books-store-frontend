@@ -59,13 +59,13 @@ const FooterContainer = () => {
           </Col>
           <Col className="store-footer-center" span={5} offset={1}>
             <h3>Kết nối với chúng tôi</h3>
-            <img
+            <a href='https://www.facebook.com/profile.php?id=100092871377584'><img
               style={{
                 objectFit: 'cover',
               }}
               src={socialtImg}
               alt=""
-            />
+            /></a>
           </Col>
         </Row>
       </WrapperConentContainer>
